@@ -45,6 +45,7 @@ create table livre (
     id int primary key auto_increment,
     titre varchar(255),
     nombre_page int,
+    lien_telecharger varchar (255),
     annee_publication year
 );
 create table recette_favori(
