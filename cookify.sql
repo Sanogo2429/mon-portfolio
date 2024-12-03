@@ -6,6 +6,7 @@ create table pays(
 id int primary key auto_increment, 
 nom varchar(255) 
 );
+
 create table type (
 id int primary key auto_increment, 
 nom varchar(255),  
