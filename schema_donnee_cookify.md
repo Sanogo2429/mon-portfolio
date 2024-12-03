@@ -7,28 +7,25 @@ varchar prenom
 varchar email
 varchar mot_de_passe
 varchar pseudo
-int id_livre_favori FK
-int id_recette_favori FK
-int id_commentaire FK
 }
 ut||--||ru: a
 ut||--o|lf: a
 ut||--o|rf: a
 p[pays] {
 int id PK
-string nom
+varchar nom
 }
 p||--o|t: a
 t[type] {
 id int PK
-string nom
+varchar nom
 int id_pays FK
 }
 
 
 s [sous_type] {
 id int PK
-string nom
+varchar nom
 int id_type FK
 }
 t ||--o| s : "possede"
@@ -68,7 +65,7 @@ int id PK
 varchar titre
 varchar lien_telecharger
 int nombre_page
-date annee_publication
+year annee_publication
 }
 lf[livre_favori]{
 int id PK
