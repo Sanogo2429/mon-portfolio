@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import maPhoto from './assets/photo.png';
 
 // Pour votre déploiement local sur Vercel, si l'image ne s'affiche toujours pas,
 // décommentez la ligne ci-dessous et utilisez 'photoPathImport' dans la balise img :
@@ -58,7 +59,7 @@ const App = () => {
   // --- CONFIGURATION ---
   const FORMSPREE_ID = "mbdrlpdn"; 
   const cvPath = "/cv_stage_Mohamed_Sanogo.pdf";
-  const photoPath = "src/assets/photo-removebg-preview.png";
+  const photoPath = maPhoto;
   const myEmail = "msanogo@et.esiea.fr";
 
   useEffect(() => {
