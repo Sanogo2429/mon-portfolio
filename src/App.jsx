@@ -53,7 +53,7 @@ const App = () => {
   // --- CONFIGURATION ---
   const FORMSPREE_ID = "mbdrlpdn"; 
   const cvPath = "/public/cv_stage_Mohamed_Sanogo.pdf";
-  const photoPath = "src/assets/photo-removebg-preview.png";
+  const photoPath = "./assets/photo-removebg-preview.png";
   const myEmail = "msanogo@et.esiea.fr";
 
   useEffect(() => {
