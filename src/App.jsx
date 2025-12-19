@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+
+// Pour votre déploiement local sur Vercel, si l'image ne s'affiche toujours pas,
+// décommentez la ligne ci-dessous et utilisez 'photoPathImport' dans la balise img :
+// import photoPathImport from './assets/photo-removebg-preview.png';
+
 import { 
   Github, 
   Linkedin, 
@@ -74,7 +79,7 @@ const App = () => {
       tech: ["C#", "Arduino", "MySQL"],
       desc: "Système d'arrosage autonome piloté par données capteurs. Automatisation complète du cycle de vie végétal.",
       impact: "-30% consommation d'eau",
-      github: "https://github.com",
+      github: "https://github.com/Sanogo2429/Gaia.git",
       icon: <Cpu size={28}/>
     },
     {
@@ -82,7 +87,7 @@ const App = () => {
       tech: ["PHP", "MVC", "MySQL"],
       desc: "Application de gestion de recettes avec architecture MVC sécurisée et optimisation SQL.",
       impact: "-40% temps de chargement",
-      github: "https://github.com",
+      github: "https://github.com/Sanogo2429/cookify.git",
       icon: <Globe size={28}/>
     },
     {
@@ -90,7 +95,7 @@ const App = () => {
       tech: ["React", "Tailwind", "JS"],
       desc: "Jeu web immersif avec mécaniques d'énigmes complexes et design adaptatif haute performance.",
       impact: "+85% satisfaction testeurs",
-      github: "https://github.com",
+      github: "https://github.com/Sanogo2429/The-lost-",
       icon: <Database size={28}/>
     }
   ];
@@ -186,7 +191,7 @@ const App = () => {
           ))}
           <div className="mt-8 flex gap-6">
             <a href="https://linkedin.com/in/mohamed-sanogo" target="_blank" rel="noreferrer" className={theme.text}><Linkedin size={32}/></a>
-            <a href="https://github.com" target="_blank" rel="noreferrer" className={theme.text}><Github size={32}/></a>
+            <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" className={theme.text}><Github size={32}/></a>
           </div>
         </div>
       )}
@@ -217,7 +222,12 @@ const App = () => {
             <div className="relative w-64 h-64 md:w-[450px] md:h-[450px] group">
               <div className={`absolute inset-0 ${theme.primary} opacity-10 rounded-[60px] blur-3xl animate-pulse`} />
               <div className="relative w-full h-full bg-slate-900 rounded-[50px] border border-white/10 p-3 overflow-hidden shadow-2xl animate-float-simple">
-                <img src={photoPath} alt="Mohamed Sanogo" className="w-full h-full object-cover rounded-[40px]" />
+                <img 
+                  src={photoPath} 
+                  alt="Mohamed Sanogo" 
+                  className="w-full h-full object-cover rounded-[40px] pointer-events-none" 
+                  onError={(e) => { e.target.src = "https://via.placeholder.com/500x500/020617/FFFFFF?text=Mohamed+Ismael"; }}
+                />
               </div>
             </div>
           </div>
@@ -248,11 +258,15 @@ const App = () => {
         </div>
       </section>
 
-      {/* Profil & CV */}
+      {/* Profil & CV (Section Dossier Candidat) */}
       <section id="profil" className="py-32 px-6 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div className="bg-[#020617] p-4 rounded-[40px] border border-white/10 shadow-3xl aspect-[1/1.414] overflow-hidden group">
-            <iframe src={`${cvPath}#toolbar=0&navpanes=0&scrollbar=0`} className="w-full h-full rounded-3xl border-none transition-all duration-700 opacity-90 hover:opacity-100" title="CV Mohamed Sanogo" />
+            <iframe 
+              src={`${cvPath}#toolbar=0&navpanes=0&scrollbar=0`} 
+              className="w-full h-full rounded-3xl border-none transition-all duration-700 opacity-90 hover:opacity-100" 
+              title="CV Mohamed Sanogo" 
+            />
           </div>
           <div className="text-center lg:text-left">
             <div className={`flex items-center justify-center lg:justify-start gap-3 ${theme.text} font-black text-xs uppercase tracking-[0.4em] mb-8 italic`}>
@@ -316,7 +330,7 @@ const App = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 px-6 text-center border-t border-white/5">
+      <footer className="py-20 px-6 text-center border-t border-white/5 bg-black/20">
         <div className="text-2xl font-black text-white mb-4 tracking-tighter uppercase italic tracking-[0.2em]">Mohamed Ismael Sanogo</div>
         <p className="text-slate-800 text-[10px] uppercase font-black tracking-[0.8em] italic">Engineering Student @ ESIEA • © 2025</p>
       </footer>
