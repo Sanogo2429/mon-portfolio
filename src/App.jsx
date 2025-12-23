@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-
-// Pour votre déploiement local sur Vercel, si l'image ne s'affiche toujours pas,
-// décommentez la ligne ci-dessous et utilisez 'photoPathImport' dans la balise img :
-// import photoPathImport from './assets/photo-removebg-preview.png';
-
 import { 
   Github, 
   Linkedin, 
@@ -27,7 +22,11 @@ import {
   CheckCircle2,
   Calendar,
   Palette,
-  Sparkles
+  Sparkles,
+  Users,
+  Lightbulb,
+  ShieldCheck,
+  Brain
 } from 'lucide-react';
 
 const App = () => {
@@ -36,7 +35,6 @@ const App = () => {
   const [scrolled, setScrolled] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   
-  // --- GESTION DU THÈME (ACCENT UNIQUEMENT) ---
   const [activeColor, setActiveColor] = useState('blue');
   const [showColorPicker, setShowColorPicker] = useState(false);
 
@@ -61,6 +59,7 @@ const App = () => {
   const cvPath = "/cv_stage_Mohamed_Sanogo.pdf";
   const photoPath = "/maphoto.png";
   const myEmail = "msanogo@et.esiea.fr";
+  const myLinkedin = "https://linkedin.com/in/mohamed-ismael-sanogo"; // Lien mis à jour
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -73,6 +72,13 @@ const App = () => {
       clearTimeout(hideTimer);
     };
   }, []);
+
+  const softSkills = [
+    { name: "Travail d'Équipe", desc: "Collaboration active sur projets agiles", icon: <Users size={20} /> },
+    { name: "Adaptabilité", desc: "Apprentissage rapide de nouveaux frameworks", icon: <Brain size={20} /> },
+    { name: "Rigueur technique", desc: "Code propre et documentation structurée", icon: <ShieldCheck size={20} /> },
+    { name: "Force de proposition", desc: "Recherche constante d'optimisation", icon: <Lightbulb size={20} /> },
+  ];
 
   const projects = [
     {
@@ -123,7 +129,6 @@ const App = () => {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 font-sans scroll-smooth selection:bg-white/10 overflow-x-hidden">
       
-      {/* Animation de flottaison discrète pour la photo */}
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
@@ -149,23 +154,6 @@ const App = () => {
         </div>
       </div>
 
-      {/* Sélecteur de couleurs */}
-      <div className="fixed right-6 bottom-6 z-[120]">
-        <button 
-          onClick={() => setShowColorPicker(!showColorPicker)}
-          className={`p-4 rounded-full bg-slate-900 border border-white/10 shadow-2xl ${theme.text} hover:scale-110 transition-all`}
-        >
-          {showColorPicker ? <X size={24} /> : <Palette size={24} />}
-        </button>
-        {showColorPicker && (
-          <div className="absolute bottom-16 right-0 bg-slate-900 border border-white/10 p-3 rounded-2xl shadow-3xl flex flex-col gap-3">
-            {colors.map((c) => (
-              <button key={c.id} onClick={() => { setActiveColor(c.id); setShowColorPicker(false); }} className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-125 ${activeColor === c.id ? 'border-white' : 'border-transparent'}`} style={{ backgroundColor: c.hex }} />
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Navbar */}
       <nav className={`fixed w-full top-0 z-[100] transition-all duration-300 ${scrolled ? 'bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
@@ -183,36 +171,57 @@ const App = () => {
         </div>
       </nav>
 
-      {/* Menu Mobile */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 bg-[#020617] z-[110] flex flex-col items-center justify-center gap-8 md:hidden text-center p-6">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-8 right-8 text-slate-400 hover:text-white"><X size={40}/></button>
-          {['Accueil', 'Projets', 'Profil', 'Contact'].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setIsMenuOpen(false)} className="text-4xl font-black text-white hover:text-blue-500 uppercase">{item}</a>
-          ))}
-          <div className="mt-8 flex gap-6">
-            <a href="https://linkedin.com/in/mohamed-sanogo" target="_blank" rel="noreferrer" className={theme.text}><Linkedin size={32}/></a>
-            <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" className={theme.text}><Github size={32}/></a>
-          </div>
-        </div>
-      )}
-
-      {/* Hero */}
+      {/* Hero Section */}
       <section id="accueil" className="relative pt-48 pb-32 px-6 flex items-center justify-center overflow-hidden min-h-screen">
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] ${theme.primary} opacity-[0.03] blur-[120px] rounded-full -z-10 transition-colors duration-1000`} />
         
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div className="text-center lg:text-left">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${theme.bgSoft} border ${theme.border}/20 ${theme.textLight} text-[10px] font-black mb-8 tracking-widest uppercase`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${theme.bgSoft} border ${theme.border}/20 ${theme.textLight} text-[10px] font-black mb-6 tracking-widest uppercase`}>
               <Zap size={14} className="fill-current" /> ÉLÈVE-INGÉNIEUR @ ESIEA
             </div>
-            <h1 className="text-5xl md:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase">
+            
+            <h1 className="text-5xl md:text-8xl font-black text-white mb-6 leading-[0.9] tracking-tighter uppercase">
               Mohamed <br /><span className={`${theme.textLight} italic`}>Sanogo.</span>
             </h1>
-            <p className="text-xl text-slate-400 mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+
+            {/* Disponibilités */}
+            <div className="flex flex-col gap-3 mb-8">
+              <div className="flex items-center justify-center lg:justify-start gap-3 text-white/90">
+                <div className={`p-2 rounded-lg ${theme.bgSoft} ${theme.text}`}>
+                  <Calendar size={18} />
+                </div>
+                <p className="text-sm font-bold uppercase tracking-wider">
+                  Recherche Stage : <span className={theme.text}>Mars 2026</span>
+                </p>
+              </div>
+              <div className="flex items-center justify-center lg:justify-start gap-3 text-white/90">
+                <div className={`p-2 rounded-lg ${theme.bgSoft} ${theme.text}`}>
+                  <Rocket size={18} />
+                </div>
+                <p className="text-sm font-bold uppercase tracking-wider">
+                  Alternance : <span className={theme.text}>Septembre 2026</span>
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xl text-slate-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
               Architecte de solutions <strong>Web</strong> & <strong>IoT</strong>. 
-              Précision, performance et innovation au service de vos projets.
             </p>
+
+            {/* AJOUT DES SOFT SKILLS DANS LE HERO */}
+            <div className="grid grid-cols-2 gap-4 mb-12">
+              {softSkills.map((skill, idx) => (
+                <div key={idx} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <div className={theme.text}>{skill.icon}</div>
+                  <div>
+                    <h5 className="text-[10px] font-black uppercase text-white tracking-wider">{skill.name}</h5>
+                    <p className="text-[9px] text-slate-500 italic">{skill.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div className="flex flex-wrap justify-center lg:justify-start gap-4 uppercase text-[10px] font-black tracking-widest">
               <a href="#projets" className={`${theme.primary} ${theme.hover} text-white px-10 py-5 rounded-2xl transition-all shadow-xl`}>Voir Projets</a>
               <a href={cvPath} download className="bg-white/5 border border-white/10 px-10 py-5 rounded-2xl hover:bg-white/10 transition-all">Télécharger CV</a>
@@ -259,7 +268,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Profil & CV (Section Dossier Candidat) */}
+      {/* Profil & CV */}
       <section id="profil" className="py-32 px-6 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div className="bg-[#020617] p-4 rounded-[40px] border border-white/10 shadow-3xl aspect-[1/1.414] overflow-hidden group">
@@ -283,7 +292,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Contact */}
+      {/* Contact Section */}
       <section id="contact" className="py-32 px-6">
         <div className="max-w-6xl mx-auto bg-slate-900/40 border border-white/10 p-10 md:p-20 rounded-[60px] relative overflow-hidden shadow-3xl">
           <div className="absolute top-0 right-0 p-12 text-white/5 rotate-12 -z-10"><Mail size={400}/></div>
@@ -295,7 +304,7 @@ const App = () => {
                   <div className={`w-10 h-10 ${theme.bgSoft} rounded-full flex items-center justify-center ${theme.text} group-hover:${theme.primary} group-hover:text-white transition-all`}><Mail size={20}/></div>
                   <span>{myEmail}</span>
                 </a>
-                <a href="https://linkedin.com/in/mohamed-sanogo" target="_blank" rel="noreferrer" className="flex items-center gap-4 text-white hover:text-white group">
+                <a href={myLinkedin} target="_blank" rel="noreferrer" className="flex items-center gap-4 text-white hover:text-white group">
                   <div className={`w-10 h-10 ${theme.bgSoft} rounded-full flex items-center justify-center ${theme.text} group-hover:${theme.primary} group-hover:text-white transition-all`}><Linkedin size={20}/></div>
                   <span>LinkedIn</span>
                 </a>
