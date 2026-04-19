@@ -1,504 +1,713 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Github, 
-  Linkedin, 
-  Mail, 
-  ExternalLink, 
-  Code2, 
-  Cpu, 
-  Database, 
-  Globe, 
-  ChevronRight, 
-  Menu, 
-  X,
-  FileText,
-  Download, 
-  Send,
-  Award,
-  Eye,
-  Rocket,
-  Zap,
-  CheckCircle2,
-  Calendar,
-  Palette,
-  Sparkles,
-  Users,
-  Lightbulb,
-  ShieldCheck,
-  Brain,
-  Layers,
-  Terminal,
-  Monitor,
-  Briefcase,
-  Heart
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Github, Linkedin, Mail, ExternalLink, Cpu, Database, Globe,
+  Menu, X, Zap, Palette, Sparkles, Users, Lightbulb, ShieldCheck,
+  Brain, Layers, Terminal, Monitor, Briefcase, ChevronRight, Calendar, ArrowUpRight
 } from 'lucide-react';
 
+/* ─────────────────────────────────────────────
+   HOOK : révèle les éléments au scroll
+───────────────────────────────────────────── */
+function useReveal() {
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-revealed'); }),
+      { threshold: 0.08 }
+    );
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+/* ─────────────────────────────────────────────
+   COMPOSANT : Texte qui s'écrit lettre par lettre
+───────────────────────────────────────────── */
+function TypeWriter({ text, className = '', delay = 0 }) {
+  const [displayed, setDisplayed] = useState('');
+  const [started, setStarted] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  useEffect(() => {
+    if (!started) return;
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayed(text.slice(0, i + 1));
+      i++;
+      if (i >= text.length) clearInterval(interval);
+    }, 45);
+    return () => clearInterval(interval);
+  }, [started, text]);
+  return <span className={className}>{displayed}<span className="animate-blink">|</span></span>;
+}
+
+/* ─────────────────────────────────────────────
+   COMPOSANT : Compteur animé
+───────────────────────────────────────────── */
+function Counter({ to, suffix = '', duration = 1500 }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  useEffect(() => {
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      let start = null;
+      const step = ts => {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / duration, 1);
+        setVal(Math.floor(p * to));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, { threshold: 0.5 });
+    if (ref.current) io.observe(ref.current);
+    return () => io.disconnect();
+  }, [to, duration]);
+  return <span ref={ref}>{val}{suffix}</span>;
+}
+
+/* ─────────────────────────────────────────────
+   APP PRINCIPALE
+───────────────────────────────────────────── */
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [formStatus, setFormStatus] = useState(null); 
+  const [formStatus, setFormStatus] = useState(null);
   const [scrolled, setScrolled] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  
-  const [activeColor, setActiveColor] = useState('blue');
+  const [activeColor, setActiveColor] = useState('gold');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: -200, y: -200 });
+  const [scrollPct, setScrollPct] = useState(0);
+
+  useReveal();
 
   const colors = [
-    { id: 'blue', hex: '#2563eb', label: 'Bleu' },
+    { id: 'gold',    hex: '#d4af37', label: 'Or' },
+    { id: 'cyan',    hex: '#06b6d4', label: 'Cyan' },
     { id: 'emerald', hex: '#10b981', label: 'Émeraude' },
-    { id: 'purple', hex: '#a855f7', label: 'Violet' },
-    { id: 'rose', hex: '#f43f5e', label: 'Rose' },
-    { id: 'orange', hex: '#f97316', label: 'Orange' },
+    { id: 'rose',    hex: '#f43f5e', label: 'Rose' },
+    { id: 'violet',  hex: '#8b5cf6', label: 'Violet' },
   ];
 
-  const theme = {
-    blue: { 
-      primary: 'bg-blue-600', 
-      text: 'text-blue-500', 
-      textLight: 'text-blue-400', 
-      border: 'border-blue-500/30', 
-      bgMain: 'bg-[#020817]',
-      bgGradient: 'from-[#020817] via-[#030d2b] to-[#020817]',
-      bgSoft: 'bg-blue-500/10',
-      accent: '#2563eb'
-    },
-    emerald: { 
-      primary: 'bg-emerald-600', 
-      text: 'text-emerald-500', 
-      textLight: 'text-emerald-400', 
-      border: 'border-emerald-500/30', 
-      bgMain: 'bg-[#020a08]',
-      bgGradient: 'from-[#020a08] via-[#041a14] to-[#020a08]',
-      bgSoft: 'bg-emerald-500/10',
-      accent: '#10b981'
-    },
-    purple: { 
-      primary: 'bg-purple-600', 
-      text: 'text-purple-500', 
-      textLight: 'text-purple-400', 
-      border: 'border-purple-500/30', 
-      bgMain: 'bg-[#06020a]',
-      bgGradient: 'from-[#06020a] via-[#12051f] to-[#06020a]',
-      bgSoft: 'bg-purple-500/10',
-      accent: '#a855f7'
-    },
-    rose: { 
-      primary: 'bg-rose-600', 
-      text: 'text-rose-500', 
-      textLight: 'text-rose-400', 
-      border: 'border-rose-500/30', 
-      bgMain: 'bg-[#0a0204]',
-      bgGradient: 'from-[#0a0204] via-[#1a040b] to-[#0a0204]',
-      bgSoft: 'bg-rose-500/10',
-      accent: '#f43f5e'
-    },
-    orange: { 
-      primary: 'bg-orange-600', 
-      text: 'text-orange-500', 
-      textLight: 'text-orange-400', 
-      border: 'border-orange-500/30', 
-      bgMain: 'bg-[#0a0502]',
-      bgGradient: 'from-[#0a0502] via-[#1a0d04] to-[#0a0502]',
-      bgSoft: 'bg-orange-500/10',
-      accent: '#f97316'
-    },
-  }[activeColor];
+  const themes = {
+    gold:    { accent: '#d4af37', accentSoft: 'rgba(212,175,55,0.12)',  accentBorder: 'rgba(212,175,55,0.3)',  accentText: '#d4af37',  glow: '0 0 40px rgba(212,175,55,0.25)' },
+    cyan:    { accent: '#06b6d4', accentSoft: 'rgba(6,182,212,0.12)',   accentBorder: 'rgba(6,182,212,0.3)',   accentText: '#06b6d4',  glow: '0 0 40px rgba(6,182,212,0.25)' },
+    emerald: { accent: '#10b981', accentSoft: 'rgba(16,185,129,0.12)',  accentBorder: 'rgba(16,185,129,0.3)',  accentText: '#10b981',  glow: '0 0 40px rgba(16,185,129,0.25)' },
+    rose:    { accent: '#f43f5e', accentSoft: 'rgba(244,63,94,0.12)',   accentBorder: 'rgba(244,63,94,0.3)',   accentText: '#f43f5e',  glow: '0 0 40px rgba(244,63,94,0.25)' },
+    violet:  { accent: '#8b5cf6', accentSoft: 'rgba(139,92,246,0.12)',  accentBorder: 'rgba(139,92,246,0.3)',  accentText: '#8b5cf6',  glow: '0 0 40px rgba(139,92,246,0.25)' },
+  };
+  const t = themes[activeColor];
 
-  const cvPath = "/cv_stage_Mohamed_Sanogo.pdf";
+  const cvPath    = "/cv_alternance_Mohamed_Ismael_Sanogo.pdf";
   const photoPath = "/maphoto.png";
-  const myEmail = "msanogo@et.esiea.fr";
-  const myLinkedin = "https://linkedin.com/in/mohamed-ismael-sanogo";
+  const myEmail   = "msanogo@et.esiea.fr";
+  const myLinkedin= "https://linkedin.com/in/mohamed-ismael-sanogo";
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    const timer = setTimeout(() => setShowWelcome(true), 1000);
-    const hideTimer = setTimeout(() => setShowWelcome(false), 8000);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(timer);
-      clearTimeout(hideTimer);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 60);
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollPct(docH > 0 ? (window.scrollY / docH) * 100 : 0);
     };
+    const onMouse = e => setMousePos({ x: e.clientX, y: e.clientY });
+    window.addEventListener('scroll', onScroll);
+    window.addEventListener('mousemove', onMouse);
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('mousemove', onMouse); };
   }, []);
 
   const softSkills = [
-    { name: "Travail d'Équipe", desc: "Collaboration agile", icon: <Users size={20} /> },
-    { name: "Adaptabilité", desc: "Apprentissage constant", icon: <Brain size={20} /> },
-    { name: "Rigueur", desc: "Code propre & structuré", icon: <ShieldCheck size={20} /> },
-    { name: "Force de proposition", desc: "Esprit critique & innovant", icon: <Lightbulb size={20} /> },
+    { name: "Esprit d'équipe",  desc: "Collaboration agile & coordination", icon: <Users size={16} /> },
+    { name: "Rigueur",          desc: "Code propre et vigilance constante",  icon: <ShieldCheck size={16} /> },
+    { name: "Autonomie",        desc: "Apprentissage rapide et proactivité", icon: <Brain size={16} /> },
+    { name: "Communication",    desc: "Écoute active & empathie",            icon: <Lightbulb size={16} /> },
   ];
-
   const techSkills = [
-    { name: "Frontend", tools: ["React", "Tailwind CSS", "JavaScript"], icon: <Monitor size={20} /> },
-    { name: "Backend", tools: ["Node.js", "PHP (MVC)", "MySQL"], icon: <Terminal size={20} /> },
-    { name: "IoT & Systèmes", tools: ["Arduino", "C#", "C++"], icon: <Cpu size={20} /> },
-    { name: "Outils", tools: ["Git", "GitLab", "Docker", "Vercel"], icon: <Layers size={20} /> },
+    { name: "Frontend",         tools: ["React", "HTML/CSS", "JS", "TS"],    icon: <Monitor size={16} /> },
+    { name: "Backend",          tools: ["C#", "ASP.NET Core", "PHP", "SQL"], icon: <Terminal size={16} /> },
+    { name: "IoT & Systèmes",   tools: ["Arduino", "C++", "Capteurs"],       icon: <Cpu size={16} /> },
+    { name: "Outils",           tools: ["GitLab", "UML", "Agilité"],         icon: <Layers size={16} /> },
   ];
-
   const timeline = [
-    { year: "2024 - 2026", title: "Bachelor Informatique", place: "ESIEA Paris", desc: "Spécialisation Développement Web et IoT. Apprentissage de l'architecture MVC et des méthodes Agiles." },
-    { year: "2023 - 2024", title: "Université Félix-Houphouët-Boigny", place: "Cocody (Abidjan)", desc: "Parcours universitaire scientifique - Renforcement des bases en sciences numériques." },
-    { year: "2022 - 2023", title: "Classes Préparatoires (PCSI/PT)", place: "Parcours Technologique", desc: "Formation scientifique intensive en Physique, Chimie et Technologie." },
+    { year: "2024 – 2027",          title: "Bachelor Informatique",        place: "ESIEA Paris",        desc: "Développement web, architecture MVC/MVVM, BDD, et intégration IoT." },
+    { year: "Mai 2025 – Présent",   title: "Agent de Sûreté Aéroportuaire",place: "Aéroport CDG",       desc: "Gestion des flux et contrôle de sécurité. Rigueur et gestion du stress." },
+    { year: "2024 – Présent",       title: "Bénévole Logistique",          place: "Marie Charity",      desc: "Organisation logistique et coordination d'équipes." },
   ];
-
-  const experience = [
-    { title: "Agent de Sûreté Aéroportuaire", company: "Aéroport CDG (Paris)", period: "Mai 2025 - Présent", desc: "Gestion des flux passagers et contrôle de sécurité. Exige une vigilance permanente et une gestion rigoureuse du stress.", icon: <Briefcase size={20}/> },
-    { title: "Bénévole Logistique", company: "Marie Charity", period: "2024 - Présent", desc: "Coordination des bénévoles et gestion des stocks alimentaires. Engagement social et organisation logistique.", icon: <Heart size={20}/> }
-  ];
-
   const projects = [
-    {
-      title: "Serre Intelligente IoT",
-      tech: ["C#", "Arduino", "MySQL"],
-      desc: "Système d'arrosage autonome piloté par données capteurs. Automatisation complète du cycle de vie végétal.",
-      impact: "-30% consommation d'eau",
-      github: "https://github.com/Sanogo2429/Gaia.git",
-      icon: <Cpu size={28}/>
-    },
-    {
-      title: "Plateforme Gastronomique",
-      tech: ["PHP", "MVC", "MySQL"],
-      desc: "Application de gestion de recettes avec architecture MVC sécurisée et optimisation SQL.",
-      impact: "-40% temps de chargement",
-      github: "https://github.com/Sanogo2429/cookify.git",
-      icon: <Globe size={28}/>
-    },
-    {
-      title: "Escape Game Interactif",
-      tech: ["React", "Tailwind", "JS"],
-      desc: "Jeu web immersif avec mécaniques d'énigmes complexes et design adaptatif haute performance.",
-      impact: "+85% satisfaction testeurs",
-      github: "https://github.com/Sanogo2429/The-lost-",
-      icon: <Database size={28}/>
-    }
+    { title: "Gestion de Bibliothèque", tech: ["ASP.NET Core","React","Entity Framework"], desc: "API REST structurée consommée par un frontend React. Séparation stricte des responsabilités.", impact: "Full Stack", github: "https://github.com/Sanogo2429", icon: <Database size={20}/> },
+    { title: "Serre Intelligente IoT",  tech: ["C#","Arduino","MySQL","C++"],               desc: "Système d'arrosage automatique avec capteurs et interface WPF temps réel.",                impact: "−30% eau",   github: "https://github.com/Sanogo2429/Gaia.git", icon: <Cpu size={20}/> },
+    { title: "Plateforme Gastronomique",tech: ["PHP","MVC","MySQL"],                        desc: "Application web de recettes avec gestion utilisateurs et optimisation BDD.",                impact: "−40% load",  github: "https://github.com/Sanogo2429/cookify.git", icon: <Globe size={20}/> },
   ];
 
-  const handleContact = async (e) => {
+  const handleContact = async e => {
     e.preventDefault();
     setFormStatus('sending');
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData);
+    const data = Object.fromEntries(new FormData(e.target));
     try {
-      const response = await fetch(`https://formspree.io/f/mbdrlpdn`, {
-        method: "POST",
-        body: JSON.stringify(data),
+      const r = await fetch('https://formspree.io/f/mbdrlpdn', {
+        method: 'POST', body: JSON.stringify(data),
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
       });
-      if (response.ok) {
-        setFormStatus('success');
-        e.target.reset(); 
-        setTimeout(() => setFormStatus(null), 5000); 
-      } else { setFormStatus('error'); }
+      if (r.ok) { setFormStatus('success'); e.target.reset(); setTimeout(() => setFormStatus(null), 5000); }
+      else setFormStatus('error');
     } catch { setFormStatus('error'); }
   };
 
   return (
-    <div className={`min-h-screen ${theme.bgMain} transition-colors duration-1000 text-slate-200 font-sans scroll-smooth overflow-x-hidden`}>
-      
+    <div style={{ '--accent': t.accent, '--accent-soft': t.accentSoft, '--accent-border': t.accentBorder, '--glow': t.glow }} className="app-root">
+
+      {/* ── STYLES GLOBAUX ── */}
       <style>{`
-        * { cursor: default !important; }
-        a, button, input, textarea, [role="button"] { cursor: pointer !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=DM+Mono:wght@400;500&display=swap');
 
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
-          100% { transform: translateY(0px); }
-        }
-        
-        /* Animation de texte Focus */
-        @keyframes focusText {
-          0% { filter: blur(12px); opacity: 0; transform: translateY(20px); }
-          100% { filter: blur(0); opacity: 1; transform: translateY(0); }
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { scroll-behavior: smooth; }
 
-        /* Animation de balayage dégradé */
-        @keyframes gradientFlow {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+        .app-root {
+          min-height: 100vh;
+          background: #070708;
+          color: #c8c8d0;
+          font-family: 'DM Sans', sans-serif;
+          overflow-x: hidden;
+          position: relative;
         }
 
+        /* Grain overlay */
+        .app-root::before {
+          content: '';
+          position: fixed; inset: 0; z-index: 0; pointer-events: none;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+          opacity: 0.55;
+        }
+
+        /* Curseur lumineux */
+        .cursor-glow {
+          position: fixed;
+          width: 320px; height: 320px;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 1;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+          transition: background 0.6s ease;
+        }
+
+        /* Barre de progression */
+        .progress-bar {
+          position: fixed; top: 0; left: 0; height: 2px; z-index: 200;
+          background: var(--accent);
+          box-shadow: var(--glow);
+          transition: width 0.1s linear;
+        }
+
+        /* Ligne verticale déco */
+        .side-line {
+          position: fixed; left: 32px; top: 50%; transform: translateY(-50%);
+          width: 1px; height: 120px;
+          background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+          z-index: 50; opacity: 0.5;
+        }
+
+        /* Titre display */
+        .font-display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.03em; }
+        .font-mono    { font-family: 'DM Mono', monospace; }
+
+        /* Reveal animation */
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.75s cubic-bezier(0.16,1,0.3,1); }
+        .reveal.is-revealed { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 100ms; }
+        .reveal-d2 { transition-delay: 200ms; }
+        .reveal-d3 { transition-delay: 300ms; }
+
+        /* Blink cursor */
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .animate-blink { animation: blink 1s step-end infinite; color: var(--accent); }
+
+        /* Float photo */
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
         .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-name { animation: focusText 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        
-        .name-reveal {
-          background: linear-gradient(270deg, #fff, ${theme.accent}, #fff);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: gradientFlow 5s ease infinite;
-          display: inline-block;
+
+        /* Spin glow */
+        @keyframes spin-slow { to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin-slow 18s linear infinite; }
+
+        /* Accent text */
+        .text-accent { color: var(--accent); }
+        .border-accent { border-color: var(--accent-border); }
+
+        /* Accent gradient text */
+        .gradient-text {
+          background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
         }
 
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.3s; }
+        /* Nav link hover */
+        .nav-link { position: relative; }
+        .nav-link::after {
+          content: ''; position: absolute; left: 0; bottom: -2px;
+          width: 0; height: 1px; background: var(--accent);
+          transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* Card hover */
+        .card {
+          background: rgba(255,255,255,0.02);
+          border: 1px solid rgba(255,255,255,0.06);
+          transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+          border-color: var(--accent-border);
+          transform: translateY(-4px);
+          box-shadow: var(--glow);
+        }
+
+        /* Séparateur décoratif */
+        .section-sep {
+          width: 100%; height: 1px;
+          background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+        }
+
+        /* Tag tech */
+        .tech-tag {
+          font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+          padding: 4px 10px; border-radius: 4px;
+          background: var(--accent-soft); border: 1px solid var(--accent-border);
+          color: var(--accent);
+        }
+
+        /* Stat number */
+        .stat-number {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(2.5rem, 5vw, 4rem);
+          line-height: 1;
+          color: var(--accent);
+        }
+
+        /* Input / textarea */
+        .field {
+          width: 100%; background: rgba(0,0,0,0.4);
+          border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+          padding: 14px 20px; color: #fff; outline: none;
+          font-family: 'DM Sans', sans-serif; font-size: 14px;
+          transition: border-color 0.2s;
+        }
+        .field:focus { border-color: var(--accent); }
+        .field::placeholder { color: rgba(255,255,255,0.2); }
+
+        /* Bouton primaire */
+        .btn-primary {
+          background: var(--accent); color: #000;
+          font-family: 'DM Sans', sans-serif; font-weight: 700;
+          font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+          padding: 16px 36px; border-radius: 6px; border: none;
+          cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s;
+          display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { opacity: 0.88; box-shadow: var(--glow); }
+
+        /* Bouton ghost */
+        .btn-ghost {
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.12); color: #fff;
+          font-family: 'DM Sans', sans-serif; font-weight: 700;
+          font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+          padding: 16px 36px; border-radius: 6px;
+          cursor: pointer; transition: border-color 0.2s, background 0.2s;
+          display: inline-flex; align-items: center; gap: 8px;
+          text-decoration: none;
+        }
+        .btn-ghost:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+
+        /* Timeline dot */
+        .tl-dot {
+          position: absolute; left: -9px; top: 4px;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: #070708; border: 2px solid rgba(255,255,255,0.15);
+          transition: border-color 0.3s, background 0.3s;
+        }
+        .tl-item:hover .tl-dot { border-color: var(--accent); background: var(--accent); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #070708; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-border); border-radius: 2px; }
+
+        /* Mobile menu */
+        @keyframes slide-in { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+        .mobile-link { animation: slide-in 0.4s ease forwards; }
+
+        /* Section label */
+        .section-label {
+          font-family: 'DM Mono', monospace;
+          font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+          color: var(--accent); opacity: 0.8;
+        }
       `}</style>
 
-      {/* Background Gradient dynamique */}
-      <div className={`fixed inset-0 bg-gradient-to-b ${theme.bgGradient} opacity-50 -z-10 transition-colors duration-1000`} />
+      {/* Curseur lumineux */}
+      <div className="cursor-glow" style={{ left: mousePos.x, top: mousePos.y }} />
 
-      {/* Toast Bienvenue */}
-      <div className={`fixed left-6 bottom-6 z-[150] transition-all duration-700 transform ${showWelcome ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-        <div className="bg-slate-900 border border-white/10 p-5 rounded-2xl shadow-2xl flex items-center gap-4 max-w-sm backdrop-blur-xl">
-          <div className={`w-12 h-12 rounded-xl ${theme.primary} flex items-center justify-center text-white shadow-lg`}>
-            <Sparkles size={24} />
-          </div>
-          <div>
-            <h4 className="font-black text-sm text-white uppercase tracking-wider">Bienvenue !</h4>
-            <p className="text-xs text-slate-400">Heureux de vous accueillir. Explorez mon parcours scientifique !</p>
-          </div>
-          <button onClick={() => setShowWelcome(false)} className="text-slate-500 hover:text-white"><X size={16} /></button>
-        </div>
-      </div>
+      {/* Barre de progression */}
+      <div className="progress-bar" style={{ width: `${scrollPct}%` }} />
 
-      {/* Navbar */}
-      <nav className={`fixed w-full top-0 z-[100] transition-all duration-300 ${scrolled ? 'bg-black/40 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 ${theme.primary} rounded flex items-center justify-center font-bold text-white shadow-lg text-[10px]`}>MS</div>
-            <span className="text-sm font-bold tracking-widest text-white hidden sm:block uppercase">Mohamed Ismael Sanogo</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            {['Accueil', 'Expertise', 'Projets', 'Profil', 'Contact'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-[10px] font-bold hover:text-white transition-colors uppercase tracking-[0.2em] text-slate-400">{item}</a>
+      {/* Ligne latérale déco */}
+      <div className="side-line" />
+
+      {/* ── NAVBAR ── */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        padding: scrolled ? '14px 0' : '24px 0',
+        background: scrolled ? 'rgba(7,7,8,0.85)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
+        transition: 'all 0.4s ease',
+      }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button onClick={() => window.scrollTo(0,0)} style={{ background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:12 }}>
+            <div style={{ width:36, height:36, background: t.accent, borderRadius:6, display:'flex',alignItems:'center',justifyContent:'center', fontFamily:'Bebas Neue,sans-serif', fontSize:13, color:'#000', letterSpacing:'0.05em' }}>MS</div>
+            <span style={{ fontFamily:'DM Mono,monospace', fontSize:11, letterSpacing:'0.2em', color:'rgba(255,255,255,0.7)', textTransform:'uppercase' }}>Mohamed Sanogo</span>
+          </button>
+
+          <div style={{ display:'flex', alignItems:'center', gap:36 }} className="hidden-mobile">
+            {['Accueil','Expertise','Projets','Profil','Contact'].map(item => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="nav-link"
+                style={{ fontSize:10, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', textDecoration:'none', transition:'color 0.2s' }}
+                onMouseEnter={e=>e.target.style.color='#fff'} onMouseLeave={e=>e.target.style.color='rgba(255,255,255,0.45)'}
+              >{item}</a>
             ))}
-            <button 
-              onClick={() => setShowColorPicker(!showColorPicker)}
-              className={`w-8 h-8 rounded-full border border-white/10 flex items-center justify-center ${theme.text} hover:bg-white/5 transition-all`}
-              title="Changer le thème"
-            >
-              <Palette size={16} />
+            <button onClick={() => setShowColorPicker(!showColorPicker)}
+              style={{ width:32,height:32,borderRadius:'50%',border:'1px solid rgba(255,255,255,0.1)',background:'rgba(255,255,255,0.03)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:t.accent }}>
+              <Palette size={14}/>
             </button>
           </div>
-          <button className="md:hidden text-white z-[120]" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="show-mobile"
+            style={{ background:'none',border:'none',cursor:'pointer',color:'#fff',padding:4 }}>
+            {isMenuOpen ? <X size={26}/> : <Menu size={26}/>}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Color picker */}
+      {showColorPicker && (
+        <div style={{ position:'fixed',top:70,right:32,zIndex:200,background:'rgba(10,10,12,0.95)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:12,padding:12,display:'flex',flexDirection:'column',gap:8,backdropFilter:'blur(20px)' }}>
+          {colors.map(c => (
+            <button key={c.id} onClick={() => { setActiveColor(c.id); setShowColorPicker(false); }}
+              title={c.label}
+              style={{ width:24,height:24,borderRadius:'50%',background:c.hex,border: activeColor===c.id ? '2px solid #fff' : '2px solid transparent',cursor:'pointer',transition:'transform 0.2s' }}
+              onMouseEnter={e=>e.target.style.transform='scale(1.2)'} onMouseLeave={e=>e.target.style.transform='scale(1)'}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Menu mobile */}
       {isMenuOpen && (
-        <div className={`fixed inset-0 ${theme.bgMain} z-[110] flex flex-col items-center justify-center gap-10 md:hidden text-center p-6 transition-colors duration-500`}>
-          {['Accueil', 'Expertise', 'Projets', 'Profil', 'Contact'].map((item) => (
-            <a 
-              key={item} 
-              href={`#${item.toLowerCase()}`} 
-              onClick={() => setIsMenuOpen(false)} 
-              className="text-5xl font-black text-white hover:opacity-70 uppercase tracking-tighter"
-            >
+        <div style={{ position:'fixed',inset:0,background:'#070708',zIndex:150,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:32 }}>
+          {['Accueil','Expertise','Projets','Profil','Contact'].map((item, i) => (
+            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setIsMenuOpen(false)} className="mobile-link"
+              style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'clamp(2.5rem,8vw,4rem)',color:'#fff',textDecoration:'none',letterSpacing:'0.05em',animationDelay:`${i*60}ms` }}>
               {item}
             </a>
           ))}
-          <div className="mt-8 flex gap-8">
-            <a href={myLinkedin} target="_blank" rel="noreferrer" className={theme.text}><Linkedin size={32}/></a>
-            <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" className={theme.text}><Github size={32}/></a>
+          <div style={{ display:'flex',gap:24,marginTop:16 }}>
+            <a href={myLinkedin} target="_blank" rel="noreferrer" style={{ color:t.accent }}><Linkedin size={24}/></a>
+            <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" style={{ color:t.accent }}><Github size={24}/></a>
           </div>
         </div>
       )}
 
-      {/* Color Picker Float */}
-      {showColorPicker && (
-        <div className="fixed top-24 right-6 z-[120] bg-black/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex flex-col gap-3 animate-focus hidden md:flex">
-          {colors.map((c) => (
-            <button 
-              key={c.id} 
-              onClick={() => { setActiveColor(c.id); setShowColorPicker(false); }} 
-              className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-125 ${activeColor === c.id ? 'border-white' : 'border-transparent'}`} 
-              style={{ backgroundColor: c.hex }} 
-            />
-          ))}
-        </div>
-      )}
+      {/* ═══════════════════════════════════════
+          HERO
+      ═══════════════════════════════════════ */}
+      <section id="accueil" style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'120px 32px 80px', position:'relative' }}>
+        {/* Grille déco en arrière-plan */}
+        <div style={{ position:'absolute',inset:0,pointerEvents:'none',
+          backgroundImage:'linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px)',
+          backgroundSize:'60px 60px', zIndex:0 }} />
 
-      {/* Hero */}
-      <section id="accueil" className="relative pt-48 pb-32 px-6 flex items-center justify-center min-h-screen">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <div className="text-center lg:text-left">
-            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded border ${theme.border} ${theme.textLight} text-[9px] font-bold mb-6 tracking-[0.3em] uppercase animate-name stagger-1`}>
-              <Zap size={12} /> ÉLÈVE-INGÉNIEUR @ ESIEA
+        <div style={{ maxWidth:1280,width:'100%',margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:80,alignItems:'center',position:'relative',zIndex:2 }} className="hero-grid">
+          <div>
+            <div style={{ display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',borderRadius:4,border:'1px solid var(--accent-border)',background:'var(--accent-soft)',marginBottom:32 }}>
+              <Zap size={12} style={{ color:t.accent, fill:t.accent }} />
+              <span style={{ fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.25em',textTransform:'uppercase',color:t.accent }}>Élève-Ingénieur @ ESIEA</span>
             </div>
-            
-            <h1 className="text-6xl md:text-[92px] font-black mb-8 leading-[0.85] tracking-tighter uppercase">
-              <span className="text-white block opacity-90 animate-name stagger-1">Mohamed Ismael</span> 
-              <span className="name-reveal italic animate-name stagger-2">Sanogo.</span>
+
+            <h1 style={{ fontFamily:'Bebas Neue,sans-serif', fontSize:'clamp(4rem,8vw,7rem)', lineHeight:0.9, marginBottom:24 }}>
+              <span style={{ display:'block', color:'rgba(255,255,255,0.92)' }}>Mohamed</span>
+              <span className="gradient-text">Sanogo.</span>
             </h1>
 
-            <div className="flex flex-col sm:flex-row gap-6 mb-10 justify-center lg:justify-start animate-name stagger-2">
-              <div className="flex items-center gap-3">
-                <Calendar size={16} className={theme.text} />
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-300">Stage : <span className="text-white">Mars 2026</span></p>
+            <p style={{ fontSize:15, color:'rgba(255,255,255,0.4)', lineHeight:1.7, maxWidth:480, marginBottom:36, fontStyle:'italic', borderLeft:`3px solid ${t.accent}`, paddingLeft:20 }}>
+              Développeur Full Stack avec une forte appétence pour l'IoT. Je conçois et livre des projets concrets avec des résultats mesurables.
+            </p>
+
+            <div style={{ display:'flex',flexDirection:'column',gap:10,marginBottom:40 }}>
+              <div style={{ display:'flex',alignItems:'center',gap:12 }}>
+                <Briefcase size={14} style={{ color:t.accent }} />
+                <span style={{ fontSize:12,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'rgba(255,255,255,0.6)' }}>
+                  Recherche <span style={{ color:'#fff' }}>Alternance</span> d'un an
+                </span>
               </div>
-              <div className="flex items-center gap-3">
-                <Rocket size={16} className={theme.text} />
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-300">Alternance : <span className="text-white">Sept 2026</span></p>
+              <div style={{ display:'flex',alignItems:'center',gap:12 }}>
+                <Calendar size={14} style={{ color:t.accent }} />
+                <span style={{ fontFamily:'DM Mono,monospace',fontSize:10,letterSpacing:'0.12em',color:'rgba(255,255,255,0.4)' }}>
+                  Début : <span style={{ color:'#fff' }}>Sept. 2026</span> &nbsp;·&nbsp; Rythme : <span style={{ color:'#fff' }}>3 sem. / 1 sem.</span>
+                </span>
               </div>
             </div>
 
-            <p className="text-lg text-slate-400 mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light italic border-l-2 pl-6 border-white/5 animate-name stagger-2">
-              "Profil scientifique de formation, spécialisé en Web & IoT. J'allie rigueur technologique et créativité pour bâtir des solutions robustes."
-            </p>
-
-            <div className="flex flex-wrap justify-center lg:justify-start gap-4 uppercase text-[10px] font-bold tracking-widest animate-name stagger-2">
-              <a href="#projets" className={`${theme.primary} text-white px-10 py-5 rounded transition-all hover:brightness-110 shadow-lg`}>Explorer Projets</a>
-              <a href={cvPath} download className="bg-white/5 border border-white/10 px-10 py-5 rounded hover:bg-white/10 transition-all text-white">Curriculum Vitae</a>
+            <div style={{ display:'flex',gap:12,flexWrap:'wrap' }}>
+              <a href="#projets" className="btn-primary">Explorer Projets <ChevronRight size={14}/></a>
+              <a href={cvPath} download className="btn-ghost">Télécharger CV</a>
             </div>
           </div>
 
-          <div className="flex justify-center items-center">
-            <div className="relative w-64 h-64 md:w-[420px] md:h-[420px] group">
-              <div className={`absolute -inset-4 bg-gradient-to-tr from-transparent via-${activeColor}-500/10 to-transparent rounded-full blur-2xl opacity-40`} />
-              <div className={`relative w-full h-full bg-slate-900 border ${theme.border} p-2 overflow-hidden shadow-2xl transition-all duration-700 animate-float`}>
-                <img 
-                  src={photoPath} 
-                  alt="Mohamed Ismael Sanogo" 
-                  className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700" 
-                  onError={(e) => { e.target.src = "https://via.placeholder.com/500x500/020617/FFFFFF?text=MS"; }}
+          {/* Photo */}
+          <div style={{ display:'flex',justifyContent:'center',alignItems:'center' }}>
+            <div style={{ position:'relative',width:'min(400px,90vw)',aspectRatio:'1' }} className="animate-float">
+              <div style={{ position:'absolute',inset:-8,borderRadius:'2rem',
+                background:`conic-gradient(from 0deg, ${t.accent}, transparent 40%, ${t.accent} 60%, transparent)`,
+                filter:'blur(24px)',opacity:0.35,animation:'spin-slow 18s linear infinite' }} className="animate-spin-slow" />
+              <div style={{ position:'relative',width:'100%',height:'100%',borderRadius:'1.8rem',overflow:'hidden',border:'1px solid rgba(255,255,255,0.08)',background:'#0d0d0f' }}>
+                <img src={photoPath} alt="Mohamed Sanogo" style={{ width:'100%',height:'100%',objectFit:'cover',filter:'grayscale(20%)' }}
+                  onError={e => { e.target.src="https://via.placeholder.com/500x500/0d0d0f/d4af37?text=MS"; }} />
+                {/* Overlay accent coin */}
+                <div style={{ position:'absolute',bottom:0,left:0,right:0,height:'40%',background:`linear-gradient(to top, rgba(7,7,8,0.8), transparent)` }} />
+                <div style={{ position:'absolute',bottom:16,left:16,fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.2em',textTransform:'uppercase',color:t.accent,opacity:0.7 }}>
+                  Full Stack · IoT · 2026
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div style={{ position:'absolute',bottom:32,left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',alignItems:'center',gap:6,opacity:0.3 }}>
+          <span style={{ fontFamily:'DM Mono,monospace',fontSize:8,letterSpacing:'0.3em',textTransform:'uppercase' }}>Scroll</span>
+          <div style={{ width:1,height:40,background:`linear-gradient(to bottom, ${t.accent}, transparent)` }} />
+        </div>
+      </section>
+
+      {/* Stats rapides */}
+      <div style={{ padding:'0 32px 80px' }}>
+        <div style={{ maxWidth:1280,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:1,borderRadius:12,overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)' }} className="reveal stats-grid">
+          {[
+            { val:3, suffix:'+', label:'Projets livrés' },
+            { val:4, suffix:'', label:'Langages maîtrisés' },
+            { val:2026, suffix:'', label:'Disponible dès' },
+          ].map((s, i) => (
+            <div key={i} style={{ padding:'32px 24px',background:'rgba(255,255,255,0.015)',textAlign:'center',borderRight: i<2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+              <div className="stat-number"><Counter to={s.val} suffix={s.suffix} /></div>
+              <div style={{ fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.2em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginTop:8 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════
+          EXPERTISE
+      ═══════════════════════════════════════ */}
+      <section id="expertise" style={{ padding:'100px 32px' }}>
+        <div className="section-sep" />
+        <div style={{ maxWidth:1280,margin:'0 auto',paddingTop:80 }}>
+          <div className="reveal" style={{ marginBottom:64 }}>
+            <div className="section-label" style={{ marginBottom:16 }}>// 01 — Compétences</div>
+            <h2 style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'clamp(2.5rem,5vw,4rem)',color:'#fff',lineHeight:1 }}>
+              Stack & <span className="gradient-text">Savoir-être.</span>
+            </h2>
+          </div>
+
+          <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:48 }} className="two-col">
+            {/* Tech */}
+            <div className="reveal reveal-d1">
+              <div style={{ fontSize:10,fontWeight:700,letterSpacing:'0.2em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginBottom:24,display:'flex',alignItems:'center',gap:8 }}>
+                <span style={{ flex:1,height:1,background:'rgba(255,255,255,0.08)',display:'block' }} />
+                Technologies
+              </div>
+              <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
+                {techSkills.map((skill, i) => (
+                  <div key={i} className="card" style={{ borderRadius:10,padding:'20px' }}>
+                    <div style={{ color:t.accent,marginBottom:14 }}>{skill.icon}</div>
+                    <div style={{ fontWeight:700,fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',color:'#fff',marginBottom:12 }}>{skill.name}</div>
+                    <div style={{ display:'flex',flexWrap:'wrap',gap:6 }}>
+                      {skill.tools.map(tool => <span key={tool} className="tech-tag">{tool}</span>)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Soft skills */}
+            <div className="reveal reveal-d2">
+              <div style={{ fontSize:10,fontWeight:700,letterSpacing:'0.2em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginBottom:24,display:'flex',alignItems:'center',gap:8 }}>
+                <span style={{ flex:1,height:1,background:'rgba(255,255,255,0.08)',display:'block' }} />
+                Qualités
+              </div>
+              <div style={{ display:'flex',flexDirection:'column',gap:12 }}>
+                {softSkills.map((skill, i) => (
+                  <div key={i} className="card" style={{ borderRadius:10,padding:'18px 20px',display:'flex',alignItems:'center',gap:16 }}>
+                    <div style={{ width:36,height:36,borderRadius:8,background:'var(--accent-soft)',display:'flex',alignItems:'center',justifyContent:'center',color:t.accent,flexShrink:0 }}>
+                      {skill.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight:700,fontSize:12,letterSpacing:'0.1em',textTransform:'uppercase',color:'#fff',marginBottom:4 }}>{skill.name}</div>
+                      <div style={{ fontSize:11,color:'rgba(255,255,255,0.35)',fontStyle:'italic' }}>{skill.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          PROJETS
+      ═══════════════════════════════════════ */}
+      <section id="projets" style={{ padding:'100px 32px' }}>
+        <div className="section-sep" />
+        <div style={{ maxWidth:1280,margin:'0 auto',paddingTop:80 }}>
+          <div className="reveal" style={{ marginBottom:64,display:'flex',justifyContent:'space-between',alignItems:'flex-end',flexWrap:'wrap',gap:16 }}>
+            <div>
+              <div className="section-label" style={{ marginBottom:16 }}>// 02 — Réalisations</div>
+              <h2 style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'clamp(2.5rem,5vw,4rem)',color:'#fff',lineHeight:1 }}>
+                Projets <span className="gradient-text">2024 – 26.</span>
+              </h2>
+            </div>
+            <p style={{ fontSize:13,color:'rgba(255,255,255,0.3)',maxWidth:360,lineHeight:1.6,fontStyle:'italic' }}>
+              Architectures complètes, code livré, résultats mesurables.
+            </p>
+          </div>
+
+          <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16 }} className="three-col">
+            {projects.map((p, i) => (
+              <div key={i} className={`card reveal reveal-d${i+1}`} style={{ borderRadius:12,padding:'28px',display:'flex',flexDirection:'column',position:'relative',overflow:'hidden' }}>
+                {/* Numéro déco */}
+                <div style={{ position:'absolute',top:20,right:20,fontFamily:'Bebas Neue,sans-serif',fontSize:'4rem',color:'rgba(255,255,255,0.03)',lineHeight:1,userSelect:'none' }}>0{i+1}</div>
+
+                <div style={{ width:40,height:40,borderRadius:8,border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',color:t.accent,marginBottom:20 }}>
+                  {p.icon}
+                </div>
+
+                <div style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'1.35rem',color:'#fff',letterSpacing:'0.04em',marginBottom:10 }}>{p.title}</div>
+                <p style={{ fontSize:12,color:'rgba(255,255,255,0.35)',lineHeight:1.7,flex:1,marginBottom:20,fontStyle:'italic' }}>{p.desc}</p>
+
+                <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:20 }}>
+                  {p.tech.map(t2 => <span key={t2} className="tech-tag">{t2}</span>)}
+                </div>
+
+                <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:16,borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+                  <a href={p.github} target="_blank" rel="noreferrer"
+                    style={{ display:'flex',alignItems:'center',gap:6,fontSize:10,fontWeight:700,letterSpacing:'0.15em',textTransform:'uppercase',color:'rgba(255,255,255,0.5)',textDecoration:'none',transition:'color 0.2s' }}
+                    onMouseEnter={e=>e.currentTarget.style.color=t.accent} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>
+                    GitHub <ArrowUpRight size={12}/>
+                  </a>
+                  <span style={{ fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.15em',color:t.accent,textTransform:'uppercase' }}>{p.impact}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          PROFIL / CV + TIMELINE
+      ═══════════════════════════════════════ */}
+      <section id="profil" style={{ padding:'100px 32px' }}>
+        <div className="section-sep" />
+        <div style={{ maxWidth:1280,margin:'0 auto',paddingTop:80,display:'grid',gridTemplateColumns:'5fr 7fr',gap:80,alignItems:'start' }} className="two-col">
+
+          {/* CV sticky */}
+          <div className="reveal" style={{ position:'sticky',top:100 }}>
+            <div className="section-label" style={{ marginBottom:24 }}>// 03 — Profil</div>
+            <div style={{ borderRadius:16,overflow:'hidden',border:'1px solid rgba(255,255,255,0.07)',boxShadow:'0 24px 80px rgba(0,0,0,0.6)',background:'#fff' }}>
+              <div style={{ width:'100%',aspectRatio:'210/297',position:'relative' }}>
+                <iframe
+                  src={`${cvPath}#toolbar=0&navpanes=0&scrollbar=0&view=FitV&zoom=page-fit`}
+                  style={{ position:'absolute',inset:0,width:'100%',height:'100%',border:'none' }}
+                  title="CV Mohamed Sanogo"
                 />
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Expertise & Skills */}
-      <section id="expertise" className="py-32 px-6 border-y border-white/5 bg-white/[0.01]">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-20">
-            {/* Hard Skills */}
-            <div>
-              <h2 className="text-3xl font-black text-white mb-12 uppercase tracking-tighter">Expertise <span className={theme.text}>Technique.</span></h2>
-              <div className="grid sm:grid-cols-2 gap-6">
-                {techSkills.map((skill, idx) => (
-                  <div key={idx} className="bg-white/[0.02] border border-white/5 p-6 rounded-xl hover:border-white/20 transition-all group">
-                    <div className={`${theme.text} mb-4`}>{skill.icon}</div>
-                    <h5 className="text-[11px] font-bold uppercase text-white tracking-widest mb-3">{skill.name}</h5>
-                    <div className="flex flex-wrap gap-2">
-                      {skill.tools.map(tool => (
-                        <span key={tool} className="text-[9px] bg-white/5 px-2 py-1 rounded text-slate-400 group-hover:text-white transition-colors">{tool}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Expériences de Terrain */}
-            <div>
-              <h2 className="text-3xl font-black text-white mb-12 uppercase tracking-tighter">Engagement <span className={theme.text}>Professionnel.</span></h2>
-              <div className="space-y-6">
-                {experience.map((exp, idx) => (
-                  <div key={idx} className="flex items-start gap-4 bg-white/[0.02] border border-white/5 p-6 rounded-xl">
-                    <div className={theme.text}>{exp.icon}</div>
-                    <div>
-                      <h5 className="text-[11px] font-bold uppercase text-white tracking-widest mb-1">{exp.title}</h5>
-                      <p className={`text-[10px] font-bold ${theme.text} mb-2`}>{exp.company} • {exp.period}</p>
-                      <p className="text-[10px] text-slate-500 italic leading-tight">{exp.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div style={{ display:'flex',gap:10,marginTop:16 }}>
+              <a href={cvPath} download className="btn-primary" style={{ flex:1,justifyContent:'center' }}>Télécharger CV</a>
+              <a href={cvPath} target="_blank" rel="noreferrer" className="btn-ghost" style={{ flex:1,justifyContent:'center' }}>Plein écran</a>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Projets */}
-      <section id="projets" className="py-32 px-6">
-        <div className="max-w-7xl mx-auto text-center mb-24">
-          <h2 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter">
-            Réalisations <span className={`${theme.textLight} italic`}>2024-25.</span>
-          </h2>
-        </div>
-        <div className="grid lg:grid-cols-3 gap-8">
-          {projects.map((project, idx) => (
-            <div key={idx} className={`group flex flex-col bg-white/[0.02] border border-white/5 p-8 hover:${theme.border} hover:-translate-y-2 transition-all duration-500 rounded-lg`}>
-              <div className={`w-12 h-12 rounded border ${theme.border} flex items-center justify-center mb-10 ${theme.text} group-hover:scale-110 transition-transform`}>
-                {project.icon}
-              </div>
-              <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-tight">{project.title}</h3>
-              <p className="text-slate-400 mb-8 flex-1 leading-relaxed text-sm font-light italic">"{project.desc}"</p>
-              <div className={`mb-8 flex flex-wrap gap-2`}>
-                {project.tech.map(t => <span key={t} className={`text-[8px] font-bold px-2 py-1 bg-${activeColor}-500/10 rounded text-slate-300`}>{t}</span>)}
-              </div>
-              <a href={project.github} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-white hover:opacity-70 transition-opacity">
-                Dépôt GitHub <ExternalLink size={14} />
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
+          {/* Timeline */}
+          <div className="reveal reveal-d2">
+            <h2 style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'clamp(2.5rem,5vw,4rem)',color:'#fff',lineHeight:1,marginBottom:56 }}>
+              Mon <span className="gradient-text">Parcours.</span>
+            </h2>
 
-      {/* Profil & Timeline */}
-      <section id="profil" className="py-32 px-6 bg-white/[0.01]">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
-          {/* CV Iframe */}
-          <div className={`bg-black/40 p-3 border ${theme.border} shadow-2xl aspect-[1/1.414] overflow-hidden group hidden lg:block`}>
-            <iframe 
-              src={`${cvPath}#toolbar=0&navpanes=0&scrollbar=0`} 
-              className="w-full h-full border-none grayscale hover:grayscale-0 transition-all duration-700" 
-              title="CV Mohamed Ismael Sanogo" 
-            />
-          </div>
-
-          {/* Timeline & Parcours Scientifique */}
-          <div>
-            <h2 className="text-4xl md:text-7xl font-black text-white mb-12 leading-none uppercase tracking-tighter">Mon <br /><span className={`${theme.textLight} italic`}>Parcours.</span></h2>
-            
-            <div className="space-y-12 mb-12">
-              {timeline.map((item, idx) => (
-                <div key={idx} className="relative pl-8 border-l-2 border-white/10">
-                  <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full ${theme.primary} shadow-[0_0_15px_${theme.accent}]`} />
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} mb-2 block`}>{item.year}</span>
-                  <h4 className="text-xl font-bold text-white uppercase mb-1">{item.title}</h4>
-                  <p className="text-sm text-slate-300 font-bold mb-2 tracking-tight">{item.place}</p>
-                  <p className="text-xs text-slate-500 italic leading-relaxed">{item.desc}</p>
+            <div style={{ display:'flex',flexDirection:'column',gap:0 }}>
+              {timeline.map((item, i) => (
+                <div key={i} className="tl-item" style={{ position:'relative',paddingLeft:32,paddingBottom:i<timeline.length-1?48:0,borderLeft:'1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="tl-dot" />
+                  <div style={{ fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.2em',textTransform:'uppercase',color:t.accent,marginBottom:8 }}>{item.year}</div>
+                  <div style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'1.25rem',color:'#fff',letterSpacing:'0.04em',marginBottom:6 }}>{item.title}</div>
+                  <div style={{ fontSize:10,fontWeight:700,letterSpacing:'0.15em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginBottom:10 }}>{item.place}</div>
+                  <p style={{ fontSize:12,color:'rgba(255,255,255,0.4)',fontStyle:'italic',lineHeight:1.7 }}>{item.desc}</p>
                 </div>
               ))}
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-6 uppercase text-[10px] font-bold tracking-widest text-center">
-              <a href={cvPath} download className={`${theme.primary} text-white px-10 py-5 rounded shadow-lg block`}>Télécharger CV (PDF)</a>
-              <a href={cvPath} target="_blank" rel="noreferrer" className="bg-white/5 border border-white/10 text-white px-10 py-5 rounded hover:bg-white/10 transition-all block">Voir plein écran</a>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-32 px-6">
-        <div className={`max-w-6xl mx-auto bg-white/[0.02] border border-white/5 p-10 md:p-24 rounded-lg relative overflow-hidden transition-all duration-700`}>
-          <div className="relative z-10 grid lg:grid-cols-5 gap-20 items-center">
-            <div className="lg:col-span-2 text-center lg:text-left">
-              <h2 className="text-5xl font-black text-white mb-12 uppercase tracking-tighter italic">Lançons <br /><span className={theme.textLight}>Le Contact.</span></h2>
-              <div className="space-y-8 font-bold text-[10px] tracking-widest uppercase text-left">
-                <a href={`mailto:${myEmail}`} className="flex items-center gap-5 text-slate-400 hover:text-white transition-all group">
-                  <div className={`w-10 h-10 border ${theme.border} rounded flex items-center justify-center ${theme.text} group-hover:${theme.primary} group-hover:text-white transition-all`}><Mail size={18}/></div>
-                  <span className="truncate">{myEmail}</span>
+      {/* ═══════════════════════════════════════
+          CONTACT
+      ═══════════════════════════════════════ */}
+      <section id="contact" style={{ padding:'100px 32px' }}>
+        <div className="section-sep" />
+        <div style={{ maxWidth:1280,margin:'0 auto',paddingTop:80 }}>
+          <div className="reveal" style={{ marginBottom:64 }}>
+            <div className="section-label" style={{ marginBottom:16 }}>// 04 — Contact</div>
+            <h2 style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'clamp(2.5rem,5vw,4rem)',color:'#fff',lineHeight:1 }}>
+              Lançons <span className="gradient-text">Le Contact.</span>
+            </h2>
+          </div>
+
+          <div style={{ display:'grid',gridTemplateColumns:'2fr 3fr',gap:80,alignItems:'start' }} className="two-col">
+            <div className="reveal">
+              <p style={{ fontSize:14,color:'rgba(255,255,255,0.4)',lineHeight:1.8,marginBottom:40,fontStyle:'italic' }}>
+                Je suis activement à la recherche d'une alternance en développement logiciel à partir de septembre 2026. N'hésitez pas à me contacter.
+              </p>
+              <div style={{ display:'flex',flexDirection:'column',gap:16 }}>
+                <a href={`mailto:${myEmail}`} style={{ display:'flex',alignItems:'center',gap:14,textDecoration:'none',padding:'14px 0',borderBottom:'1px solid rgba(255,255,255,0.06)' }}
+                  onMouseEnter={e=>e.currentTarget.style.borderBottomColor=t.accentBorder} onMouseLeave={e=>e.currentTarget.style.borderBottomColor='rgba(255,255,255,0.06)'}>
+                  <Mail size={16} style={{ color:t.accent,flexShrink:0 }} />
+                  <span style={{ fontFamily:'DM Mono,monospace',fontSize:10,letterSpacing:'0.1em',color:'rgba(255,255,255,0.5)',transition:'color 0.2s' }}>{myEmail}</span>
                 </a>
-                <a href={myLinkedin} target="_blank" rel="noreferrer" className="flex items-center gap-5 text-slate-400 hover:text-white transition-all group">
-                  <div className={`w-10 h-10 border ${theme.border} rounded flex items-center justify-center ${theme.text} group-hover:${theme.primary} group-hover:text-white transition-all`}><Linkedin size={18}/></div>
-                  <span>LinkedIn : Mohamed-Ismael-Sanogo</span>
+                <a href={myLinkedin} target="_blank" rel="noreferrer" style={{ display:'flex',alignItems:'center',gap:14,textDecoration:'none',padding:'14px 0',borderBottom:'1px solid rgba(255,255,255,0.06)' }}
+                  onMouseEnter={e=>e.currentTarget.style.borderBottomColor=t.accentBorder} onMouseLeave={e=>e.currentTarget.style.borderBottomColor='rgba(255,255,255,0.06)'}>
+                  <Linkedin size={16} style={{ color:t.accent,flexShrink:0 }} />
+                  <span style={{ fontFamily:'DM Mono,monospace',fontSize:10,letterSpacing:'0.1em',color:'rgba(255,255,255,0.5)' }}>LinkedIn — Mohamed-Ismael</span>
                 </a>
               </div>
             </div>
 
-            <div className="lg:col-span-3">
-              <form className="space-y-6" onSubmit={handleContact}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 uppercase text-[9px] font-bold tracking-widest text-slate-500">
-                  <div className="space-y-2">
-                    <label>Nom</label>
-                    <input name="name" type="text" className="w-full bg-black/40 border border-white/10 rounded px-6 py-4 focus:border-white outline-none text-white transition-all" required />
+            <div className="reveal reveal-d2">
+              <form onSubmit={handleContact} style={{ display:'flex',flexDirection:'column',gap:16 }}>
+                <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
+                  <div>
+                    <label style={{ display:'block',fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.2em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginBottom:8 }}>Nom</label>
+                    <input name="name" type="text" className="field" placeholder="Votre nom" required />
                   </div>
-                  <div className="space-y-2">
-                    <label>Email</label>
-                    <input name="email" type="email" className="w-full bg-black/40 border border-white/10 rounded px-6 py-4 focus:border-white outline-none text-white transition-all" required />
+                  <div>
+                    <label style={{ display:'block',fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.2em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginBottom:8 }}>Email</label>
+                    <input name="email" type="email" className="field" placeholder="email@pro.com" required />
                   </div>
                 </div>
-                <div className="space-y-2 uppercase text-[9px] font-bold tracking-widest text-slate-500">
-                  <label>Message</label>
-                  <textarea name="message" rows="4" className="w-full bg-black/40 border border-white/10 rounded px-6 py-4 focus:border-white outline-none text-white resize-none transition-all" required></textarea>
+                <div>
+                  <label style={{ display:'block',fontFamily:'DM Mono,monospace',fontSize:9,letterSpacing:'0.2em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',marginBottom:8 }}>Message</label>
+                  <textarea name="message" rows={5} className="field" placeholder="Votre message..." required style={{ resize:'none' }} />
                 </div>
-                <button type="submit" className={`w-full py-5 rounded font-bold transition-all uppercase text-[10px] tracking-widest ${formStatus === 'success' ? 'bg-emerald-600 text-white' : `${theme.primary} text-white shadow-xl`}`} disabled={formStatus === 'sending'}>
-                  {formStatus === 'sending' ? "Envoi en cours..." : formStatus === 'success' ? "Message Transmis" : "Envoyer le message"}
+                <button type="submit" className="btn-primary" disabled={formStatus==='sending'}
+                  style={{ background: formStatus==='success' ? '#10b981' : t.accent, width:'100%',justifyContent:'center',fontSize:11 }}>
+                  {formStatus==='sending' ? 'Envoi en cours…' : formStatus==='success' ? '✓ Message transmis' : 'Envoyer le message'}
                 </button>
               </form>
             </div>
@@ -506,16 +715,30 @@ const App = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-20 px-6 text-center border-t border-white/5 bg-black/40">
-        <div className="text-2xl font-black text-white mb-6 tracking-widest uppercase italic">Mohamed Ismael Sanogo</div>
-        <div className="flex justify-center gap-8 mb-8 opacity-50">
-            <a href={myLinkedin} target="_blank" rel="noreferrer" className={`hover:scale-110 transition-transform ${theme.text}`}><Linkedin size={20}/></a>
-            <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" className={`hover:scale-110 transition-transform ${theme.text}`}><Github size={20}/></a>
-            <a href={`mailto:${myEmail}`} className={`hover:scale-110 transition-transform ${theme.text}`}><Mail size={20}/></a>
+      {/* FOOTER */}
+      <footer style={{ padding:'60px 32px',borderTop:'1px solid rgba(255,255,255,0.05)',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:16 }}>
+        <div style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'1.1rem',letterSpacing:'0.15em',color:'rgba(255,255,255,0.25)' }}>
+          Mohamed Ismael Sanogo — Élève Ingénieur ESIEA © 2026
         </div>
-        <p className="text-slate-600 text-[9px] uppercase font-bold tracking-[1em]">ESIEA Paris • © 2025</p>
+        <div style={{ display:'flex',gap:20 }}>
+          <a href={myLinkedin} target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,0.2)',transition:'color 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color=t.accent} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.2)'}><Linkedin size={18}/></a>
+          <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,0.2)',transition:'color 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color=t.accent} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.2)'}><Github size={18}/></a>
+          <a href={`mailto:${myEmail}`} style={{ color:'rgba(255,255,255,0.2)',transition:'color 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color=t.accent} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.2)'}><Mail size={18}/></a>
+        </div>
       </footer>
+
+      {/* Responsive CSS */}
+      <style>{`
+        .hidden-mobile { display: flex; }
+        .show-mobile   { display: none; }
+        @media (max-width: 900px) {
+          .hidden-mobile { display: none !important; }
+          .show-mobile   { display: block !important; }
+          .hero-grid, .two-col, .three-col, .stats-grid { grid-template-columns: 1fr !important; }
+          .side-line { display: none; }
+          footer { flex-direction: column; text-align: center; }
+        }
+      `}</style>
     </div>
   );
 };
