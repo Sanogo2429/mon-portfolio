@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Github, Linkedin, Mail, ExternalLink, Cpu, Database, Globe,
   Menu, X, Zap, Palette, Sparkles, Users, Lightbulb, ShieldCheck,
-  Brain, Layers, Terminal, Monitor, Briefcase, ChevronRight, Calendar, ArrowUpRight
+  Brain, Layers, Terminal, Monitor, Briefcase, ChevronRight, Calendar, ArrowUpRight, Rocket
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
@@ -78,11 +78,13 @@ const App = () => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -200, y: -200 });
   const [scrollPct, setScrollPct] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useReveal();
 
   const colors = [
     { id: 'gold',    hex: '#d4af37', label: 'Or' },
+    { id: 'white',   hex: '#ffffff', label: 'Blanc' },
     { id: 'cyan',    hex: '#06b6d4', label: 'Cyan' },
     { id: 'emerald', hex: '#10b981', label: 'Émeraude' },
     { id: 'rose',    hex: '#f43f5e', label: 'Rose' },
@@ -91,6 +93,7 @@ const App = () => {
 
   const themes = {
     gold:    { accent: '#d4af37', accentSoft: 'rgba(212,175,55,0.12)',  accentBorder: 'rgba(212,175,55,0.3)',  accentText: '#d4af37',  glow: '0 0 40px rgba(212,175,55,0.25)' },
+    white:   { accent: '#ffffff', accentSoft: 'rgba(255,255,255,0.08)', accentBorder: 'rgba(255,255,255,0.25)',accentText: '#ffffff',  glow: '0 0 40px rgba(255,255,255,0.15)' },
     cyan:    { accent: '#06b6d4', accentSoft: 'rgba(6,182,212,0.12)',   accentBorder: 'rgba(6,182,212,0.3)',   accentText: '#06b6d4',  glow: '0 0 40px rgba(6,182,212,0.25)' },
     emerald: { accent: '#10b981', accentSoft: 'rgba(16,185,129,0.12)',  accentBorder: 'rgba(16,185,129,0.3)',  accentText: '#10b981',  glow: '0 0 40px rgba(16,185,129,0.25)' },
     rose:    { accent: '#f43f5e', accentSoft: 'rgba(244,63,94,0.12)',   accentBorder: 'rgba(244,63,94,0.3)',   accentText: '#f43f5e',  glow: '0 0 40px rgba(244,63,94,0.25)' },
@@ -112,7 +115,17 @@ const App = () => {
     const onMouse = e => setMousePos({ x: e.clientX, y: e.clientY });
     window.addEventListener('scroll', onScroll);
     window.addEventListener('mousemove', onMouse);
-    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('mousemove', onMouse); };
+
+    // Toast bienvenue
+    const t1 = setTimeout(() => setShowWelcome(true), 1200);
+    const t2 = setTimeout(() => setShowWelcome(false), 7000);
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('mousemove', onMouse);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   const softSkills = [
@@ -128,14 +141,16 @@ const App = () => {
     { name: "Outils",           tools: ["GitLab", "UML", "Agilité"],         icon: <Layers size={16} /> },
   ];
   const timeline = [
-    { year: "2024 – 2027",          title: "Bachelor Informatique",        place: "ESIEA Paris",        desc: "Développement web, architecture MVC/MVVM, BDD, et intégration IoT." },
-    { year: "Mai 2025 – Présent",   title: "Agent de Sûreté Aéroportuaire",place: "Aéroport CDG",       desc: "Gestion des flux et contrôle de sécurité. Rigueur et gestion du stress." },
-    { year: "2024 – Présent",       title: "Bénévole Logistique",          place: "Marie Charity",      desc: "Organisation logistique et coordination d'équipes." },
+    { year: "2024 – 2027",              title: "Bachelor Informatique",               place: "ESIEA Paris",        desc: "Développement web, architecture MVC/MVVM, BDD, et intégration IoT." },
+    { year: "Oct. 2024 – Fév. 2025",   title: "Chef de Projet – E-Learning",         place: "Cyberharcèlement & Harcèlement Scolaire", desc: "Création d'un site web de sensibilisation, organisation d'ateliers, gestion d'équipe et conception de supports pédagogiques." },
+    { year: "Mai 2025 – Présent",       title: "Agent de Sûreté Aéroportuaire",       place: "Aéroport CDG",       desc: "Gestion des flux et contrôle de sécurité. Rigueur et gestion du stress." },
+    { year: "2024 – Présent",           title: "Bénévole Logistique",                 place: "Marie Charity",      desc: "Organisation logistique et coordination d'équipes." },
   ];
   const projects = [
     { title: "Gestion de Bibliothèque", tech: ["ASP.NET Core","React","Entity Framework"], desc: "API REST structurée consommée par un frontend React. Séparation stricte des responsabilités.", impact: "Full Stack", github: "https://github.com/Sanogo2429", icon: <Database size={20}/> },
     { title: "Serre Intelligente IoT",  tech: ["C#","Arduino","MySQL","C++"],               desc: "Système d'arrosage automatique avec capteurs et interface WPF temps réel.",                impact: "−30% eau",   github: "https://github.com/Sanogo2429/Gaia.git", icon: <Cpu size={20}/> },
     { title: "Plateforme Gastronomique",tech: ["PHP","MVC","MySQL"],                        desc: "Application web de recettes avec gestion utilisateurs et optimisation BDD.",                impact: "−40% load",  github: "https://github.com/Sanogo2429/cookify.git", icon: <Globe size={20}/> },
+    { title: "E-Learning Cyberharcèlement", tech: ["Gestion de projet","UML","Site web"],  desc: "Création d'un site de sensibilisation, ateliers jeunes & adultes. Gestion d'équipe et supports pédagogiques.", impact: "Chef de Projet", github: "https://github.com/Sanogo2429", icon: <Rocket size={20}/> },
   ];
 
   const handleContact = async e => {
@@ -164,10 +179,12 @@ const App = () => {
 
         .app-root {
           min-height: 100vh;
+          height: 100vh;
           background: #070708;
           color: #c8c8d0;
           font-family: 'DM Sans', sans-serif;
           overflow-x: hidden;
+          overflow-y: auto;
           position: relative;
         }
 
@@ -353,6 +370,34 @@ const App = () => {
       {/* Ligne latérale déco */}
       <div className="side-line" />
 
+      {/* ── TOAST BIENVENUE ── */}
+      <div style={{
+        position: 'fixed', left: 24, bottom: 24, zIndex: 200,
+        transform: showWelcome ? 'translateY(0)' : 'translateY(120%)',
+        opacity: showWelcome ? 1 : 0,
+        transition: 'transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease',
+        background: 'rgba(10,10,12,0.92)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid var(--accent-border)',
+        borderRadius: 12,
+        padding: '14px 16px',
+        display: 'flex', alignItems: 'center', gap: 14,
+        maxWidth: 320,
+        boxShadow: 'var(--glow)',
+      }}>
+        <div style={{ width:36, height:36, borderRadius:8, background:'var(--accent-soft)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+          <Sparkles size={18} style={{ color: t.accent }} />
+        </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontWeight:700, fontSize:12, color:'#fff', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:3 }}>Bienvenue !</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', fontStyle:'italic' }}>Découvrez mon parcours et mes projets.</div>
+        </div>
+        <button onClick={() => setShowWelcome(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.3)', padding:4, display:'flex' }}
+          onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>
+          <X size={14}/>
+        </button>
+      </div>
+
       {/* ── NAVBAR ── */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
@@ -388,17 +433,88 @@ const App = () => {
         </div>
       </nav>
 
-      {/* Color picker */}
+      {/* Color picker — panel desktop / bottom sheet mobile */}
       {showColorPicker && (
-        <div style={{ position:'fixed',top:70,right:32,zIndex:200,background:'rgba(10,10,12,0.95)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:12,padding:12,display:'flex',flexDirection:'column',gap:8,backdropFilter:'blur(20px)' }}>
-          {colors.map(c => (
-            <button key={c.id} onClick={() => { setActiveColor(c.id); setShowColorPicker(false); }}
-              title={c.label}
-              style={{ width:24,height:24,borderRadius:'50%',background:c.hex,border: activeColor===c.id ? '2px solid #fff' : '2px solid transparent',cursor:'pointer',transition:'transform 0.2s' }}
-              onMouseEnter={e=>e.target.style.transform='scale(1.2)'} onMouseLeave={e=>e.target.style.transform='scale(1)'}
-            />
-          ))}
-        </div>
+        <>
+          {/* Overlay pour fermer en cliquant dehors */}
+          <div onClick={() => setShowColorPicker(false)}
+            style={{ position:'fixed', inset:0, zIndex:198, background:'rgba(0,0,0,0.4)', backdropFilter:'blur(2px)' }} />
+
+          {/* Panel desktop */}
+          <div className="color-picker-desktop" style={{
+            position:'fixed', top:70, right:32, zIndex:200,
+            background:'rgba(10,10,12,0.97)',
+            border:'1px solid rgba(255,255,255,0.1)',
+            borderRadius:16, padding:'16px',
+            backdropFilter:'blur(24px)',
+            boxShadow:'0 24px 60px rgba(0,0,0,0.6)',
+            minWidth:210,
+          }}>
+            <div style={{ fontFamily:'DM Mono,monospace', fontSize:9, letterSpacing:'0.25em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:14, paddingBottom:10, borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+              Couleur d'accent
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              {colors.map(c => (
+                <button key={c.id}
+                  onClick={() => { setActiveColor(c.id); setShowColorPicker(false); }}
+                  style={{
+                    display:'flex', alignItems:'center', gap:12,
+                    background: activeColor===c.id ? 'rgba(255,255,255,0.06)' : 'transparent',
+                    border: activeColor===c.id ? `1px solid ${c.hex}40` : '1px solid transparent',
+                    borderRadius:8, padding:'10px 12px', cursor:'pointer',
+                    transition:'all 0.2s', width:'100%', textAlign:'left',
+                  }}>
+                  <div style={{ width:22, height:22, borderRadius:'50%', flexShrink:0, background:c.hex, border:c.id==='white'?'1px solid rgba(255,255,255,0.3)':'none', boxShadow:activeColor===c.id?`0 0 12px ${c.hex}80`:'none', transition:'box-shadow 0.2s' }} />
+                  <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, fontWeight:600, color:activeColor===c.id?'#fff':'rgba(255,255,255,0.45)', letterSpacing:'0.05em' }}>{c.label}</span>
+                  {activeColor===c.id && <span style={{ marginLeft:'auto', fontSize:12, color:c.hex }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom sheet mobile */}
+          <div className="color-picker-mobile" style={{
+            position:'fixed', bottom:0, left:0, right:0, zIndex:200,
+            background:'#0e0e10',
+            borderTop:'1px solid rgba(255,255,255,0.1)',
+            borderRadius:'20px 20px 0 0',
+            padding:'20px 24px 40px',
+            boxShadow:'0 -24px 60px rgba(0,0,0,0.8)',
+          }}>
+            {/* Poignée */}
+            <div style={{ width:40, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)', margin:'0 auto 20px' }} />
+            <div style={{ fontFamily:'DM Mono,monospace', fontSize:9, letterSpacing:'0.25em', textTransform:'uppercase', color:'rgba(255,255,255,0.35)', marginBottom:20, textAlign:'center' }}>
+              Couleur d'accent
+            </div>
+            {/* Grille de swatches larges pour le doigt */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
+              {colors.map(c => (
+                <button key={c.id}
+                  onClick={() => { setActiveColor(c.id); setShowColorPicker(false); }}
+                  style={{
+                    display:'flex', flexDirection:'column', alignItems:'center', gap:10,
+                    background: activeColor===c.id ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
+                    border: activeColor===c.id ? `1px solid ${c.hex}60` : '1px solid rgba(255,255,255,0.07)',
+                    borderRadius:14, padding:'16px 8px', cursor:'pointer',
+                    transition:'all 0.2s',
+                  }}>
+                  {/* Swatch grand format pour le doigt */}
+                  <div style={{
+                    width:44, height:44, borderRadius:'50%', background:c.hex,
+                    border: c.id==='white' ? '1px solid rgba(255,255,255,0.4)' : 'none',
+                    boxShadow: activeColor===c.id ? `0 0 18px ${c.hex}90` : 'none',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:18, color: c.id==='white'?'#000':'transparent',
+                    transition:'box-shadow 0.2s',
+                  }}>
+                    {activeColor===c.id ? '✓' : ''}
+                  </div>
+                  <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:12, fontWeight:600, color:activeColor===c.id?'#fff':'rgba(255,255,255,0.4)', letterSpacing:'0.04em' }}>{c.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Menu mobile */}
@@ -410,10 +526,16 @@ const App = () => {
               {item}
             </a>
           ))}
-          <div style={{ display:'flex',gap:24,marginTop:16 }}>
+          <div style={{ display:'flex',gap:24,marginTop:8 }}>
             <a href={myLinkedin} target="_blank" rel="noreferrer" style={{ color:t.accent }}><Linkedin size={24}/></a>
             <a href="https://github.com/Sanogo2429" target="_blank" rel="noreferrer" style={{ color:t.accent }}><Github size={24}/></a>
           </div>
+          {/* Bouton palette dans le menu mobile */}
+          <button onClick={() => { setIsMenuOpen(false); setShowColorPicker(true); }}
+            style={{ display:'flex',alignItems:'center',gap:10,background:'rgba(255,255,255,0.04)',border:`1px solid ${t.accentBorder}`,borderRadius:12,padding:'12px 24px',cursor:'pointer',color:t.accent,marginTop:8 }}>
+            <Palette size={18}/>
+            <span style={{ fontFamily:'DM Sans,sans-serif',fontSize:13,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase' }}>Changer la couleur</span>
+          </button>
         </div>
       )}
 
@@ -733,10 +855,18 @@ const App = () => {
         .show-mobile   { display: none; }
         @media (max-width: 900px) {
           .hidden-mobile { display: none !important; }
-          .show-mobile   { display: block !important; }
+          .show-mobile   { display: flex !important; align-items: center; }
           .hero-grid, .two-col, .three-col, .stats-grid { grid-template-columns: 1fr !important; }
           .side-line { display: none; }
           footer { flex-direction: column; text-align: center; }
+          /* Sur mobile : afficher bottom sheet, cacher panel desktop */
+          .color-picker-desktop { display: none !important; }
+          .color-picker-mobile  { display: block !important; }
+        }
+        @media (min-width: 901px) {
+          /* Sur desktop : afficher panel, cacher bottom sheet */
+          .color-picker-desktop { display: block !important; }
+          .color-picker-mobile  { display: none !important; }
         }
       `}</style>
     </div>
