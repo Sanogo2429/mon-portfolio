@@ -740,8 +740,8 @@ const App = () => {
         <div className="section-sep" />
         <div style={{ maxWidth:1280,margin:'0 auto',paddingTop:80,display:'grid',gridTemplateColumns:'5fr 7fr',gap:80,alignItems:'start' }} className="two-col">
 
-          {/* CV sticky */}
-          <div className="reveal" style={{ position:'sticky',top:100 }}>
+          {/* CV sticky — caché sur mobile */}
+          <div className="reveal cv-desktop" style={{ position:'sticky',top:100 }}>
             <div className="section-label" style={{ marginBottom:24 }}>// 03 — Profil</div>
             <div style={{ borderRadius:16,overflow:'hidden',border:'1px solid rgba(255,255,255,0.07)',boxShadow:'0 24px 80px rgba(0,0,0,0.6)',background:'#fff' }}>
               <div style={{ width:'100%',aspectRatio:'210/297',position:'relative' }}>
@@ -760,6 +760,7 @@ const App = () => {
 
           {/* Timeline */}
           <div className="reveal reveal-d2">
+            <div className="section-label cv-mobile" style={{ marginBottom:16 }}>// 03 — Profil</div>
             <h2 style={{ fontFamily:'Bebas Neue,sans-serif',fontSize:'clamp(2.5rem,5vw,4rem)',color:'#fff',lineHeight:1,marginBottom:56 }}>
               Mon <span className="gradient-text">Parcours.</span>
             </h2>
@@ -774,6 +775,12 @@ const App = () => {
                   <p style={{ fontSize:12,color:'rgba(255,255,255,0.4)',fontStyle:'italic',lineHeight:1.7 }}>{item.desc}</p>
                 </div>
               ))}
+            </div>
+
+            {/* Boutons CV visibles uniquement sur mobile */}
+            <div className="cv-mobile" style={{ display:'flex',gap:10,marginTop:40 }}>
+              <a href={cvPath} download className="btn-primary" style={{ flex:1,justifyContent:'center' }}>Télécharger CV</a>
+              <a href={cvPath} target="_blank" rel="noreferrer" className="btn-ghost" style={{ flex:1,justifyContent:'center' }}>Plein écran</a>
             </div>
           </div>
         </div>
@@ -859,6 +866,9 @@ const App = () => {
           .hero-grid, .two-col, .three-col, .stats-grid { grid-template-columns: 1fr !important; }
           .side-line { display: none; }
           footer { flex-direction: column; text-align: center; }
+          /* Cacher le CV sur mobile */
+          .cv-desktop { display: none !important; }
+          .cv-mobile  { display: flex !important; }
           /* Sur mobile : afficher bottom sheet, cacher panel desktop */
           .color-picker-desktop { display: none !important; }
           .color-picker-mobile  { display: block !important; }
@@ -867,6 +877,9 @@ const App = () => {
           /* Sur desktop : afficher panel, cacher bottom sheet */
           .color-picker-desktop { display: block !important; }
           .color-picker-mobile  { display: none !important; }
+          /* Cacher les boutons CV dupliqués sur desktop */
+          .cv-mobile { display: none !important; }
+          .cv-desktop { display: block !important; }
         }
       `}</style>
     </div>
