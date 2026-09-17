@@ -45,7 +45,7 @@ const App = () => {
     { type: 'image', src: '/imagegaia.jpeg', title: '3. Équipe sur le stand ESIEA' }
   ];
 
-  // Médias du projet Cookify (Chemins corrigés pour mobile/web)
+ // Médias du projet Cookify (Chemins nettoyés et sécurisés pour Vercel)
   const cookifySlides = [
     { type: 'image', src: '/cookifyphoto.jpeg', title: '1. Présentation de Cookify' },
     { type: 'image', src: '/pageacceuilcookify.png', title: '2. Accueil & Découverte' },
@@ -54,10 +54,9 @@ const App = () => {
     { type: 'image', src: '/recettepayscookify.png', title: '5. Explorateur de cuisines du monde' },
     { type: 'image', src: '/selectionmenucookify.png', title: '6. Sélection des menus' },
     { type: 'image', src: '/menudescriptioncookify.png', title: '7. Fiche détaillée des recettes' },
-    { type: 'image', src: '/cuisinothèquecookify.png', title: '8. Cuisinothèque & Ingrédients' },
+    { type: 'image', src: '/cuisinothequecookify.png', title: '8. Cuisinothèque & Ingrédients' }, // Accent retiré (è -> e)
     { type: 'image', src: '/jeuxcookify.png', title: '9. Quizz & Espace ludique' },
-    { type: 'video', src: '/IMG_1344-Ck1IXw3W.mov', title: '10. Moment de démonstration' },
-    { type: 'video', src: '/videocookify.MOV', title: '11. Démo dynamique de Cookify' }
+    { type: 'video', src: '/videocookify.mp4', title: '10. Démo dynamique de Cookify' } // Extension convertie/normalisée en .mp4 si besoin
   ];
 
   // Images du projet SafeSchool (Chemins corrigés)
